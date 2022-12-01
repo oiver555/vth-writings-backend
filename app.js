@@ -7,7 +7,7 @@ const express = require('express')
 const regex = require('./regex')
 const app = express()
 const { writeFile, readFile, existsSync, createWriteStream } = require('fs');
-const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const fetch = require('node-fetch')
 
 const addDataToJSON = (docs, abbr) => {
     const documentsContent = docs.map(item => {
@@ -241,18 +241,26 @@ const init = async () => {
     //     miniSearchIndex = loadJSON(data) 
     // },)
     const indexRef = sRef(vthStorage, "searchIndex/searchIndex.txt")
+    // console.log(indexRef)
+
     const uri = { uri: await getDownloadURL(indexRef) }
+    // console.log(uri)
+
     const dataRaw = await fetch(`${uri.uri}`)
+
     const data = await dataRaw.json()
     // console.log(typeof data)
     miniSearchIndex = loadJSON(data)
+    // console.log(miniSearchIndex._documentCount)
+
     app.listen(port, () => {
         console.log(`App running on port ${port}...`);
-    });   
+    });
     // }
 }
 
 init()
+
 
 
 const port = process.env.PORT || 3000;
