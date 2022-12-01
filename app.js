@@ -216,7 +216,7 @@ const getAllBooks = async () => {
         getAllBooks()
     } else {
         console.log("All Books Processed!")
-        const file = 'searchIndex.txt';
+        // const file = 'searchIndex.txt';
         // writeFile(file, JSON.stringify(miniSearchIndex), (e) => console.log("Index is written out to file", e));
         app.listen(port, () => {
             console.log(`App running on port ${port}...`);
