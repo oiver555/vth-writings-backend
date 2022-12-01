@@ -21,9 +21,7 @@ const addDataToJSON = (docs, abbr) => {
 
 // REGULAR SEARCH
 app.get('/regular/:query', (req, res) => {
-    miniSearchIndex = miniSearchIndex._documentCount === 0 && loadJSON(constant.index)
     console.log(`Searching MiniSearch Index for ${req.params.query}`)
-    // console.log(JSON.stringify(miniSearchIndex))
 
     const results = miniSearchIndex.search(req.params.query, { boost: { text: 10 }, combineWith: 'OR', })
 
@@ -250,9 +248,8 @@ const init = async () => {
 
     const data = await dataRaw.json()
     // console.log(typeof data)
-    miniSearchIndex = loadJSON(data)
-    // console.log(miniSearchIndex._documentCount)
-
+    miniSearchIndex = loadJSON(data)    
+    console.log(miniSearchIndex._documentCount)
     app.listen(port, () => {
         console.log(`App running on port ${port}...`);
     });
@@ -260,7 +257,5 @@ const init = async () => {
 }
 
 init()
-
-
 
 const port = process.env.PORT || 3000;
