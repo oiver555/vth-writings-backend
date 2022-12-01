@@ -4,11 +4,12 @@ const { initializeApp, } = require("firebase/app")
 const { getDatabase, ref, get, child } = require('firebase/database')
 const express = require('express')
 const regex = require('./regex')
-const app = express() 
+const app = express()
+const { writeFile, readFile, existsSync } = require('fs');
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 
 const addDataToJSON = (docs, abbr) => {
-
     const documentsContent = docs.map(item => {
         item["abbr"] = abbr
         item["index"] = `${abbr} ${item["index"]}`
@@ -18,10 +19,12 @@ const addDataToJSON = (docs, abbr) => {
 }
 
 
-
 // REGULAR SEARCH
 app.get('/regular/:query', (req, res) => {
+    miniSearchIndex = miniSearchIndex._documentCount === 0 && loadJSON(constant.index)
     console.log(`Searching MiniSearch Index for ${req.params.query}`)
+    // console.log(JSON.stringify(miniSearchIndex))
+
     const results = miniSearchIndex.search(req.params.query, { boost: { text: 10 }, combineWith: 'OR', })
 
     res.status(200).json({
@@ -29,7 +32,7 @@ app.get('/regular/:query', (req, res) => {
         type: "Regular Search",
         length: results.length,
         requestedAt: req.requestTime,
-        data: { results }
+        data: { results: JSON.stringify(miniSearchIndex) }
     })
 })
 
@@ -171,31 +174,29 @@ const firebaseConfig = {
 const appInit = initializeApp(firebaseConfig)
 const firebase = ref(getDatabase(appInit))
 
-const miniSearchIndex = new MiniSearch({
+let miniSearchIndex = new MiniSearch({
     fields: ['text', 'subHeading', 'title'], // fields to index for full-text search
     storeFields: ['page', 'text', 'year', 'abbr', 'subHeading', 'title'], // fields to return with search results
     processTerm: (term, _fieldName) => constant.stopWords.has(term) ? null : term.toLowerCase(),
     idField: 'index'
 })
 
-const fetch = async (path) => {
+
+const firebaseFetch = async (path) => {
     console.log(path)
     const dataSnapShot = await get(child(firebase, path))
     return dataSnapShot.val()
 }
 
-
 const addBookAsync = (documents) => {
     miniSearchIndex.addAll(documents)
-    // .then(res => console.log(miniSearchIndex.documentCount))
-    console.log(miniSearchIndex.documentCount)
 }
 
 const firebaseDocumentURLS = ['literatureDocuments/Tracts', 'literatureDocuments/Old Codes', 'literatureDocuments/Sermon Codes', 'literatureDocuments/Jezreel Letters', 'literatureDocuments/Answerers', 'literatureDocuments/1TG', 'literatureDocuments/2TG', 'literatureDocuments/Miscellaneous', 'literatureDocuments/1SR/1SR', 'literatureDocuments/2SR/2SR']
 
 const getAllBooks = async () => {
     const url = firebaseDocumentURLS.splice(0, 1)
-    const res = await fetch(`english/${url}`)
+    const res = await firebaseFetch(`english/${url}`)
 
     if (Array.isArray(res)) {
         const abbr = res[0].page.split(" ")[0]
@@ -215,6 +216,8 @@ const getAllBooks = async () => {
         getAllBooks()
     } else {
         console.log("All Books Processed!")
+        const file = 'searchIndex.txt';
+        writeFile(file, JSON.stringify(miniSearchIndex), (e) => console.log("Index is written out to file", e));
         app.listen(port, () => {
             console.log(`App running on port ${port}...`);
         });
@@ -222,6 +225,36 @@ const getAllBooks = async () => {
 
 }
 
-getAllBooks()
+const loadJSON = (index) => {
+    return MiniSearch.loadJSON(index, {
+        fields: ['text', 'subHeading', 'title'],
+        storeFields: ['page', 'text', 'year', 'abbr', 'subHeading', 'title'],
+        processTerm: (term, _fieldName) => constant.stopWords.has(term) ? null : term.toLowerCase(),
+        idField: "index"
+    })
+}
+
+const init = async () => {
+    if (existsSync("searchIndex.txt")) {
+        console.log("Search Index exists!")
+        readFile("searchIndex.txt", {}, (e, data) => {
+           
+            miniSearchIndex = loadJSON(data) 
+            // fetch("https://vth-writings-backend.herokuapp.com/regular/Truth")
+            //     .then(response => {
+            //         response.json()
+            //         .then(res => console.log(res.length)
+            //         )
+            //     }
+            //     )
+        },)
+    } else {
+        console.log("Search Index doesn't exist!")
+        getAllBooks()
+    }
+}
+
+init()
+
 
 const port = process.env.PORT || 3000;
