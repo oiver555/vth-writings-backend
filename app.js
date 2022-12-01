@@ -1,13 +1,13 @@
 const MiniSearch = require('minisearch')
 const constant = require('./constant')
 const { initializeApp, } = require("firebase/app")
-const { getDatabase, ref, get, child } = require('firebase/database')
+const { getDatabase, ref, get, child, } = require('firebase/database')
+const { getStorage, ref: sRef, getDownloadURL } = require('firebase/storage')
 const express = require('express')
 const regex = require('./regex')
 const app = express()
-const { writeFile, readFile, existsSync } = require('fs');
+const { writeFile, readFile, existsSync, createWriteStream } = require('fs');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-
 
 const addDataToJSON = (docs, abbr) => {
     const documentsContent = docs.map(item => {
@@ -173,6 +173,7 @@ const firebaseConfig = {
 
 const appInit = initializeApp(firebaseConfig)
 const firebase = ref(getDatabase(appInit))
+const vthStorage = getStorage(appInit)
 
 let miniSearchIndex = new MiniSearch({
     fields: ['text', 'subHeading', 'title'], // fields to index for full-text search
@@ -222,11 +223,10 @@ const getAllBooks = async () => {
             console.log(`App running on port ${port}...`);
         });
     }
-
 }
 
 const loadJSON = (index) => {
-    return MiniSearch.loadJSON(index, {
+    return MiniSearch.loadJS(index, {
         fields: ['text', 'subHeading', 'title'],
         storeFields: ['page', 'text', 'year', 'abbr', 'subHeading', 'title'],
         processTerm: (term, _fieldName) => constant.stopWords.has(term) ? null : term.toLowerCase(),
@@ -235,16 +235,18 @@ const loadJSON = (index) => {
 }
 
 const init = async () => {
-    if (existsSync("searchIndex.txt")) {
-        console.log("Search Index exists!")
-        readFile("searchIndex.txt", {}, (e, data) => {
-           
-            miniSearchIndex = loadJSON(data) 
-        },)
-    } else {
-        console.log("Search Index doesn't exist!")
-        getAllBooks()
-    }
+    // if (existsSync("searchIndex.txt")) {
+    //     console.log("Search Index exists!")
+    // readFile("searchIndex.txt", {}, (e, data) => {           
+    //     miniSearchIndex = loadJSON(data) 
+    // },)
+    const indexRef = sRef(vthStorage, "searchIndex/searchIndex.txt")
+    const uri = { uri: await getDownloadURL(indexRef) }
+    const dataRaw = await fetch(`${uri.uri}`)
+    const data = await dataRaw.json()
+    // console.log(typeof data)
+    miniSearchIndex = loadJSON(data)   
+    // }
 }
 
 init()
