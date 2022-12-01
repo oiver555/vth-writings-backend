@@ -238,21 +238,24 @@ const init = async () => {
     // readFile("searchIndex.txt", {}, (e, data) => {           
     //     miniSearchIndex = loadJSON(data) 
     // },)
-    const indexRef = sRef(vthStorage, "searchIndex/searchIndex.txt")
-    // console.log(indexRef)
+    
+    if (miniSearchIndex._documentCount === 0) {
+        const indexRef = sRef(vthStorage, "searchIndex/searchIndex.txt")
+        const uri = { uri: await getDownloadURL(indexRef) }
+        // console.log(uri)
 
-    const uri = { uri: await getDownloadURL(indexRef) }
-    // console.log(uri)
+        const dataRaw = await fetch(`${uri.uri}`)
 
-    const dataRaw = await fetch(`${uri.uri}`)
-
-    const data = await dataRaw.json()
-    // console.log(typeof data)
-    miniSearchIndex = loadJSON(data)    
-    console.log(miniSearchIndex._documentCount)
-    app.listen(port, () => {
-        console.log(`App running on port ${port}...`);
-    });
+        const data = await dataRaw.json()
+        // console.log(typeof data)
+        miniSearchIndex = loadJSON(data)
+        console.log(miniSearchIndex._documentCount)
+        app.listen(port, () => {
+            console.log(`App running on port ${port}...`);
+        });
+    } else {
+        console.log("Search Index Already Loaded")
+    }
     // }
 }
 
