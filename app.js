@@ -240,13 +240,6 @@ const init = async () => {
         readFile("searchIndex.txt", {}, (e, data) => {
            
             miniSearchIndex = loadJSON(data) 
-            // fetch("https://vth-writings-backend.herokuapp.com/regular/Truth")
-            //     .then(response => {
-            //         response.json()
-            //         .then(res => console.log(res.length)
-            //         )
-            //     }
-            //     )
         },)
     } else {
         console.log("Search Index doesn't exist!")
