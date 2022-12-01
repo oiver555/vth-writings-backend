@@ -245,7 +245,10 @@ const init = async () => {
     const dataRaw = await fetch(`${uri.uri}`)
     const data = await dataRaw.json()
     // console.log(typeof data)
-    miniSearchIndex = loadJSON(data)   
+    miniSearchIndex = loadJSON(data)
+    app.listen(port, () => {
+        console.log(`App running on port ${port}...`);
+    });   
     // }
 }
 
