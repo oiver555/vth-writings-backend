@@ -23,15 +23,15 @@ const addDataToJSON = (docs, abbr) => {
 app.get('/regular/:query', (req, res) => {
     console.log(`Searching MiniSearch Index for ${req.params.query}`)
 
-    // const results = miniSearchIndex.search(req.params.query, { boost: { text: 10 }, combineWith: 'OR', })
+    const results = miniSearchIndex.search(req.params.query, { boost: { text: 10 }, combineWith: 'OR', })
 
-    // res.status(200).json({
-    //     status: 'success',
-    //     type: "Regular Search",
-    //     length: results.length,
-    //     requestedAt: req.requestTime,
-    //     data: { results: JSON.stringify(miniSearchIndex) }
-    // })
+    res.status(200).json({
+        status: 'success',
+        type: "Regular Search",
+        length: results.length,
+        requestedAt: req.requestTime,
+        data: { results: JSON.stringify(miniSearchIndex) }
+    })
 })
 
 // Limit search to specific book and find exact phrase within that book 
