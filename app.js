@@ -23,15 +23,15 @@ const addDataToJSON = (docs, abbr) => {
 app.get('/regular/:query', (req, res) => {
     console.log(`Searching MiniSearch Index for ${req.params.query}`)
 
-    const results = miniSearchIndex.search(req.params.query, { boost: { text: 10 }, combineWith: 'OR', })
+    // const results = miniSearchIndex.search(req.params.query, { boost: { text: 10 }, combineWith: 'OR', })
 
-    res.status(200).json({
-        status: 'success',
-        type: "Regular Search",
-        length: results.length,
-        requestedAt: req.requestTime,
-        data: { results: JSON.stringify(miniSearchIndex) }
-    })
+    // res.status(200).json({
+    //     status: 'success',
+    //     type: "Regular Search",
+    //     length: results.length,
+    //     requestedAt: req.requestTime,
+    //     data: { results: JSON.stringify(miniSearchIndex) }
+    // })
 })
 
 // Limit search to specific book and find exact phrase within that book 
@@ -199,20 +199,20 @@ const getAllBooks = async () => {
 
     if (Array.isArray(res)) {
         const abbr = res[0].page.split(" ")[0]
-        addDataToJSON(res, abbr)
-        addBookAsync(res)
+        // addDataToJSON(res, abbr)
+        // addBookAsync(res)
     } else {
         const catOfBooksFlattened = Object.keys(res).reduce((aggr, abbr) => {
             addDataToJSON(res[abbr], abbr)
             aggr.push(...res[abbr])
             return aggr
         }, [])
-        addBookAsync(catOfBooksFlattened)
+        // addBookAsync(catOfBooksFlattened)
     }
 
     if (firebaseDocumentURLS.length) {
         // console.log(res)
-        getAllBooks()
+        // getAllBooks()
     } else {
         console.log("All Books Processed!")
         // const file = 'searchIndex.txt';
@@ -238,18 +238,18 @@ const init = async () => {
     // readFile("searchIndex.txt", {}, (e, data) => {           
     //     miniSearchIndex = loadJSON(data) 
     // },)
-    
+
     if (miniSearchIndex._documentCount === 0) {
-        const indexRef = sRef(vthStorage, "searchIndex/searchIndex.txt")
-        const uri = { uri: await getDownloadURL(indexRef) }
+        // return
+        // const indexRef = sRef(vthStorage, "searchIndex/searchIndex.txt")
+        // const uri = { uri: await getDownloadURL(indexRef) }
         // console.log(uri)
 
-        const dataRaw = await fetch(`${uri.uri}`)
-
+        const dataRaw = await fetch(`https://drive.google.com/uc?export=download&id=1InALaFCKHt0ZzQI8eFEXDnSjF7hYgccT`)
+        // console.log(await dataRaw.json())
         const data = await dataRaw.json()
-        // console.log(typeof data)
         miniSearchIndex = loadJSON(data)
-        console.log(miniSearchIndex._documentCount)
+        // console.log(miniSearchIndex.search("Truth"))
         app.listen(port, () => {
             console.log(`App running on port ${port}...`);
         });
