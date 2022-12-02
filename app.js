@@ -24,6 +24,8 @@ app.get('/regular/:query', (req, res) => {
     console.log(`Searching MiniSearch Index for ${req.params.query}`)
 
     const results = miniSearchIndex.search(req.params.query, { boost: { text: 10 }, combineWith: 'OR', })
+    
+    console.log(results.length)
 
     res.status(200).json({
         status: 'success',
@@ -239,7 +241,7 @@ const init = async () => {
     //     miniSearchIndex = loadJSON(data) 
     // },)
 
-    if (miniSearchIndex._documentCount === 0) {
+        if (miniSearchIndex._documentCount === 0) {
         // return
         // const indexRef = sRef(vthStorage, "searchIndex/searchIndex.txt")
         // const uri = { uri: await getDownloadURL(indexRef) }
