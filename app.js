@@ -18,7 +18,6 @@ const addDataToJSON = (docs, abbr) => {
     return documentsContent
 }
 
-
 // REGULAR SEARCH
 app.get('/regular/:query', (req, res) => {
     console.log(`Searching MiniSearch Index for ${req.params.query}`)
@@ -173,7 +172,6 @@ const firebaseConfig = {
 
 const appInit = initializeApp(firebaseConfig)
 const firebase = ref(getDatabase(appInit))
-const vthStorage = getStorage(appInit)
 
 let miniSearchIndex = new MiniSearch({
     fields: ['text', 'subHeading', 'title'], // fields to index for full-text search
