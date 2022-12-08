@@ -6,8 +6,32 @@ const { getStorage, ref: sRef, getDownloadURL } = require('firebase/storage')
 const express = require('express')
 const regex = require('./regex')
 const app = express()
-const { writeFile, readFile, existsSync, createWriteStream } = require('fs');
+const fs = require('fs');
 const fetch = require('node-fetch')
+const textToSpeech = require('@google-cloud/text-to-speech');
+const util = require('util');
+const port = process.env.PORT || 3000;
+require('dotenv').config()
+const { parse } = require('envfile');
+const pathToenvFile = 'config/dev.env'
+let speechKey = process.env.SPEECH
+
+const getEnv = (key) => {
+    fs.readFile(pathToenvFile, 'utf8', function (err, data) {
+        if (err) {
+            return console.log(err);
+        }
+        let result = parse(data);
+        // console.log(result[key]);
+        if (speechKey === undefined) {
+            speechKey = result[key]
+        }
+    });
+}
+
+
+// Creates a client
+const client = new textToSpeech.TextToSpeechClient();
 
 const addDataToJSON = (docs, abbr) => {
     const documentsContent = docs.map(item => {
@@ -17,6 +41,44 @@ const addDataToJSON = (docs, abbr) => {
     })
     return documentsContent
 }
+
+const createRequest = text => ({
+    input: { text: text },
+    voice: { languageCode: 'en-US', ssmlGender: 'FEMALE' },
+    audioConfig: { audioEncoding: 'MP3' }
+})
+
+
+// SPEECH
+app.get('/speech/:query', async (req, res) => {
+    console.log(`Speech to text ${req.params.query}`)
+
+    // Construct the request
+    const request = {
+        input: { text: req.params.query },
+        // Select the language and SSML voice gender (optional)
+        voice: { languageCode: 'en-US', ssmlGender: 'FEMALE' },
+        // select the type of audio encoding
+        audioConfig: { audioEncoding: 'MP3' },
+    };
+
+    // Performs the text-to-speech request
+    const [response] = await client.synthesizeSpeech(request);
+
+    // Write the binary audio content to a local file
+    const writeFile = util.promisify(fs.writeFile);
+    await writeFile('output.mp3', response.audioContent, 'base64');
+    
+    res.status(200).json({
+        status: 'success',
+        type: "Text to Speech",
+        requestedAt: req.requestTime,
+        data: { results : response.audioContent }
+    })
+
+    // console.log('Audio content written to file: output.mp3', response.audioContent);
+})
+
 
 // REGULAR SEARCH
 app.get('/regular/:query', (req, res) => {
@@ -246,19 +308,17 @@ const init = async () => {
         // console.log(uri)
 
         const dataRaw = await fetch(`https://drive.google.com/uc?export=download&id=1InALaFCKHt0ZzQI8eFEXDnSjF7hYgccT`)
-        // console.log(await dataRaw.json())
         const data = await dataRaw.json()
         miniSearchIndex = loadJSON(data)
         // console.log(miniSearchIndex.search("Truth"))
         app.listen(port, () => {
+
             console.log(`App running on port ${port}...`);
         });
     } else {
         console.log("Search Index Already Loaded")
     }
-    // }
+    // } 
 }
 
 init()
-
-const port = process.env.PORT || 3000;
