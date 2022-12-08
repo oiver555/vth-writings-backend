@@ -11,8 +11,7 @@ const fetch = require('node-fetch')
 const textToSpeech = require('@google-cloud/text-to-speech');
 const util = require('util');
 const port = process.env.PORT || 3000;
-require('dotenv').config()
-const { parse } = require('envfile');
+// const { parse } = require('envfile');
 const pathToenvFile = 'config/dev.env'
 let speechKey = process.env.SPEECH
 
@@ -41,13 +40,6 @@ const addDataToJSON = (docs, abbr) => {
     })
     return documentsContent
 }
-
-const createRequest = text => ({
-    input: { text: text },
-    voice: { languageCode: 'en-US', ssmlGender: 'FEMALE' },
-    audioConfig: { audioEncoding: 'MP3' }
-})
-
 
 // SPEECH
 app.get('/speech/:query', async (req, res) => {
