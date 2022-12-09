@@ -299,12 +299,11 @@ const init = async () => {
         // return
         // const indexRef = sRef(vthStorage, "searchIndex/searchIndex.txt")
         // const uri = { uri: await getDownloadURL(indexRef) }
-        // console.log(uri)
+        // console.log(uri) 
 
-        // const dataRaw = await fetch(`https://drive.google.com/uc?export=download&id=1InALaFCKHt0ZzQI8eFEXDnSjF7hYgccT`)
-        // const data = await dataRaw.json()
-        // miniSearchIndex = loadJSON(data)
-        // console.log(miniSearchIndex.search("Truth"))
+        const dataRaw = await fetch(`https://drive.google.com/uc?export=download&id=1InALaFCKHt0ZzQI8eFEXDnSjF7hYgccT`)
+        const data = await dataRaw.json()
+        miniSearchIndex = loadJSON(data)
         app.listen(port, () => {
 
             console.log(`App running on port ${port}...`);
