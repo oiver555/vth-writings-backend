@@ -1,6 +1,6 @@
 const MiniSearch = require('minisearch')
 const constant = require('./constant')
-require('dotenv').config() 
+require('dotenv').config()
 const { initializeApp, } = require("firebase/app")
 const { getDatabase, ref, get, child, } = require('firebase/database')
 const { getStorage, ref: sRef, getDownloadURL } = require('firebase/storage')
@@ -57,7 +57,7 @@ app.get('/speech/:query', async (req, res) => {
         voice: { languageCode: 'en-US', ssmlGender: 'FEMALE' },
         audioConfig: { audioEncoding: 'MP3' },
         client_email
-    };    
+    };
 
     // Performs the text-to-speech request
     const [response] = await client.synthesizeSpeech(request);
@@ -70,7 +70,7 @@ app.get('/speech/:query', async (req, res) => {
         status: 'success',
         type: "Text to Speech",
         requestedAt: req.requestTime,
-        data: { results: response.audioContent }
+        data: { results: Buffer.from(response.audioContent).toString("base64") }
     })
 })
 
@@ -301,9 +301,9 @@ const init = async () => {
         // const uri = { uri: await getDownloadURL(indexRef) }
         // console.log(uri)
 
-        const dataRaw = await fetch(`https://drive.google.com/uc?export=download&id=1InALaFCKHt0ZzQI8eFEXDnSjF7hYgccT`)
-        const data = await dataRaw.json()
-        miniSearchIndex = loadJSON(data)
+        // const dataRaw = await fetch(`https://drive.google.com/uc?export=download&id=1InALaFCKHt0ZzQI8eFEXDnSjF7hYgccT`)
+        // const data = await dataRaw.json()
+        // miniSearchIndex = loadJSON(data)
         // console.log(miniSearchIndex.search("Truth"))
         app.listen(port, () => {
 
