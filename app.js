@@ -1,5 +1,6 @@
 const MiniSearch = require('minisearch')
 const constant = require('./constant')
+require('dotenv').config() 
 const { initializeApp, } = require("firebase/app")
 const { getDatabase, ref, get, child, } = require('firebase/database')
 const { getStorage, ref: sRef, getDownloadURL } = require('firebase/storage')
@@ -11,7 +12,9 @@ const fetch = require('node-fetch')
 const textToSpeech = require('@google-cloud/text-to-speech');
 const util = require('util');
 const port = process.env.PORT || 3000;
-// const { parse } = require('envfile');
+const projectId = process.env.PROJECT_ID;
+const client_email = process.env.CLIENT_EMAIL;
+const private_key = process.env.PRIVATE_KEY.replace(/\\n/gm, '\n')
 const pathToenvFile = 'config/dev.env'
 let speechKey = process.env.SPEECH
 
@@ -28,9 +31,12 @@ const getEnv = (key) => {
     });
 }
 
-
 // Creates a client
-const client = new textToSpeech.TextToSpeechClient();
+const client = new textToSpeech.TextToSpeechClient({
+    projectId, credentials: {
+        client_email, private_key
+    }
+});
 
 const addDataToJSON = (docs, abbr) => {
     const documentsContent = docs.map(item => {
@@ -48,27 +54,24 @@ app.get('/speech/:query', async (req, res) => {
     // Construct the request
     const request = {
         input: { text: req.params.query },
-        // Select the language and SSML voice gender (optional)
         voice: { languageCode: 'en-US', ssmlGender: 'FEMALE' },
-        // select the type of audio encoding
         audioConfig: { audioEncoding: 'MP3' },
-    };
+        client_email
+    };    
 
     // Performs the text-to-speech request
     const [response] = await client.synthesizeSpeech(request);
 
     // Write the binary audio content to a local file
-    const writeFile = util.promisify(fs.writeFile);
-    await writeFile('output.mp3', response.audioContent, 'base64');
-    
+    // const writeFile = util.promisify(fs.writeFile);
+    // await writeFile('output.mp3', response.audioContent, 'base64');
+
     res.status(200).json({
         status: 'success',
         type: "Text to Speech",
         requestedAt: req.requestTime,
-        data: { results : response.audioContent }
+        data: { results: response.audioContent }
     })
-
-    // console.log('Audio content written to file: output.mp3', response.audioContent);
 })
 
 
@@ -233,7 +236,6 @@ let miniSearchIndex = new MiniSearch({
     processTerm: (term, _fieldName) => constant.stopWords.has(term) ? null : term.toLowerCase(),
     idField: 'index'
 })
-
 
 const firebaseFetch = async (path) => {
     console.log(path)

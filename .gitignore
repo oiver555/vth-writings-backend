@@ -1,3 +1,5 @@
 node_modules
 searchIndex.txt
 config
+.env
+vthwritings-service_account.json
