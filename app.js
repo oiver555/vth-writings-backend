@@ -70,7 +70,7 @@ app.get('/speech/:query', async (req, res) => {
         status: 'success',
         type: "Text to Speech",
         requestedAt: req.requestTime,
-        data: response.audioContent 
+        data: { results: response.audioContent }
     })
 })
 
