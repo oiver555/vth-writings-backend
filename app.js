@@ -52,12 +52,28 @@ app.get('/speech/:query', async (req, res) => {
     console.log(`Speech to text ${req.params.query}`)
 
     // Construct the request
+    // const request = {
+    //     input: { text: req.params.query },
+    //     voice: { languageCode: 'en-US', ssmlGender: 'FEMALE' },
+    //     audioConfig: { audioEncoding: 'MP3' },
+    //     client_email
+    // };
+
     const request = {
-        input: { text: req.params.query },
-        voice: { languageCode: 'en-US', ssmlGender: 'FEMALE' },
-        audioConfig: { audioEncoding: 'MP3' },
+        "audioConfig": {
+            "audioEncoding": "LINEAR16",
+            "pitch": -0.8,
+            "speakingRate": 0.89
+        },
+        "input": {
+            "text": req.params.query,
+        },
+        "voice": {
+            "languageCode": "en-US",
+            "name": "en-US-Neural2-D"
+        },
         client_email
-    };
+    }
 
     // Performs the text-to-speech request
     const [response] = await client.synthesizeSpeech(request);
