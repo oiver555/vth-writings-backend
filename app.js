@@ -61,19 +61,21 @@ app.get('/speech/:query', async (req, res) => {
 
     const request = {
         "audioConfig": {
-            "audioEncoding": "LINEAR16",
-            "pitch": -0.8,
-            "speakingRate": 0.89
+          "audioEncoding": "LINEAR16",
+          "effectsProfileId": [
+            "handset-class-device"
+          ],
+          "pitch": -0.8,
+          "speakingRate": 1
         },
         "input": {
-            "text": req.params.query,
+          "text": req.params.query,
         },
         "voice": {
-            "languageCode": "en-US",
-            "name": "en-US-Neural2-D"
-        },
-        client_email
-    }
+          "languageCode": "en-US",
+          "name": "en-US-Neural2-D"
+        }
+      }
 
     // Performs the text-to-speech request
     const [response] = await client.synthesizeSpeech(request);
